@@ -21,19 +21,62 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = @"Tip Calculater";
-    [self updateValues];
+    // Don't need to do the work here anymore as the viewWillAppear takes care of it.
+    // [self doTheWork];
+}
+
+/**
+ Store both the bill amount and tip percentage into user defaults.
+ */
+- (void) storeInfoToDefault {
+    NSInteger tipIndex = self.tipControl.selectedSegmentIndex;
+    float billAmount   = [self.billTextField.text floatValue];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setInteger:tipIndex forKey:@"tipCalc_tipIndex"];
+    [defaults setFloat:billAmount forKey:@"tipCalc_billAmount"];
+    [defaults synchronize];
+}
+
+-(void) loadInfoFromDefault {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    self.tipControl.selectedSegmentIndex = [defaults integerForKey:@"tipCalc_tipIndex"];
+    self.billTextField.text = [NSString stringWithFormat:@"%.0f", [defaults floatForKey:@"tipCalc_billAmount"]];
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+/**
+ When a tap happens in the view 
+
+ @param sender <#sender description#>
+ */
 - (IBAction)onTap:(UITapGestureRecognizer *)sender {
+    [self doTheWork];
+}
+
+/**
+ When the tip percentage value changes 
+ make sure you do the work.
+
+ @param sender <#sender description#>
+ */
+- (IBAction)onValueChanged:(UISegmentedControl *)sender {
+    [self doTheWork];
+}
+
+/**
+ The work includes the following:
+ 1) close down the number pad
+ 2) re-calculate the bill/tip/total
+ 3) store the tip % and bill amount into user defaults.
+ */
+- (void) doTheWork {
     [self.view endEditing:YES];
     [self updateValues];
-}
-- (IBAction)onValueChanged:(UISegmentedControl *)sender {
-    [self updateValues];
+    [self storeInfoToDefault];
 }
 
 - (void)updateValues {
@@ -54,4 +97,20 @@
     
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    NSLog(@"view will appear");
+    [self loadInfoFromDefault];
+    [self doTheWork];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"view did appear");}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    NSLog(@"view will disappear");
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    NSLog(@"view did disappear");
+}
 @end
